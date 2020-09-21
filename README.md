@@ -1,2 +1,2 @@
 # Heart-Rate-Monitor
-Heart Rate Monitor for ECE 5250.
+Heart Rate Monitor Project for ECE 5250.
