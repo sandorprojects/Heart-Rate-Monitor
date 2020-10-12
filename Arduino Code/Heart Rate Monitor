@@ -9,13 +9,13 @@
 #include <PulseSensorPlayground.h>
 #include <SoftwareSerial.h>
 
-SoftwareSerial SwSerial(0,1); //(Rx,Tx)
+SoftwareSerial SwSerial(10,11); //(Rx,Tx)
 
 //Auth Token is needed to communicate the Blynk app with the Arduino
 //Note that only the specified Auth Token can work with this assigned Blynk project
 char auth[] = "Fg2Us6Ode8IJo1w3JD_y4wyyujBFCWTH";
 
-SoftwareSerial bluetooth(0,1); //(Rx,Tx) Refers to the Rx & Tx pins on the Bluetooth Module connecting to Arduino Pins Rx & Tx, which are pins 0 & 1
+//SoftwareSerial bluetooth(0,1); //(Rx,Tx) Refers to the Rx & Tx pins on the Bluetooth Module connecting to Arduino Pins Rx & Tx, which are pins 0 & 1
 
 PulseSensorPlayground thePulseSensor; //This creates an instance of the PulseSensorPlayground object
 
@@ -29,8 +29,8 @@ void setup() {
   
   //Setup code for Bluetooth
   Serial.begin(9600);
-  bluetooth.begin(9600);
-  Blynk.begin(bluetooth, auth);
+  SwSerial.begin(9600);
+  Blynk.begin(SwSerial, auth);
   Serial.println("Attempting Bluetooth Connection");
   
   //Setup code for the Pulse Sensor
