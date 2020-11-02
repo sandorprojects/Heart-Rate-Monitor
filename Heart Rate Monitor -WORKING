@@ -1,0 +1,76 @@
+//ECE 5250 Embedded Systems
+//Fall Semester 2020
+//Heart Rate Monitor Project
+
+#define USE_ARDUINO_INTERRUPTS true
+#define BLYNK_PRINT Serial
+#include <Blynk.h>
+#include <BlynkSimpleSerialBLE.h>
+#include <PulseSensorPlayground.h>
+#include <SoftwareSerial.h>
+
+//Connect Rx of bluetooth module to pin 11
+//Connect Tx of bluetooth module to pin 10
+SoftwareSerial HM10(10,11); //(Rx,Tx)
+
+//Auth Token is needed to communicate the Blynk app with the Arduino
+//Note that only the specified Auth Token can work with this assigned Blynk project
+char auth[] = "Fg2Us6Ode8IJo1w3JD_y4wyyujBFCWTH";
+
+PulseSensorPlayground thePulseSensor; //This creates an instance of the PulseSensorPlayground object
+
+//Defining and initializing two variables that deals with the Pulse Sensor Hardware
+const int PurplePulseWire_Pin = 0; //Signal Wire (Purple wire) is connected to ANALOG PIN 0 (A0) on the Arduino
+int Threshold = 550; //This determines which signal will count as a beat and which will be ignored.
+                     //This Value needs to be adjusted for fine tuning.
+
+BlynkTimer timer; // Using a timer to send data in interval
+
+void setup() {
+  //This portion of the code will run once
+  
+  //Setup code for Bluetooth
+  Serial.begin(9600);
+  HM10.begin(9600);
+  Blynk.begin(HM10, auth);
+  Serial.println("Attempting Bluetooth Connection");
+  
+  //Setup code for the Pulse Sensor
+  thePulseSensor.analogInput(PurplePulseWire_Pin);
+  thePulseSensor.setThreshold(Threshold);
+  
+  //Checking if the object was created and if the signal is being seen
+  if(thePulseSensor.begin())
+  {
+      Serial.println("PulseSensor Object created successfully");
+  }
+
+  timer.setInterval(1000, sensorDataSend); //timer will run every sec 
+}
+
+void sensorDataSend()
+{
+  //A function included in "PulseSensorPlayground" will be used to get the Beats Per Minute (BPM)
+  int getBPM = thePulseSensor.getBeatsPerMinute(); //"getBPM" will store the BPM value
+
+  //Displays the BPM value on the Blynk app
+  if(getBPM>0)
+  {
+    Serial.print("Heart Rate is: ");
+    Serial.println(getBPM);
+    Blynk.virtualWrite(V0,getBPM); //Virtual Pin 0 (V0) is setup on the app itself
+                                   //V0 is used on the app's widget. This portion of the code will write the "getBPM" data into V0
+                                   //V0 can be changed/accessed by clicking on the widget and the settings will appear
+  }else{
+    Blynk.virtualWrite(V0,getBPM); //Virtual Pin 0 (V0) is setup on the app itself
+    Serial.print("No Heart Rate ");
+    Serial.println(getBPM);
+  }
+}
+
+void loop() {
+  //Main code for the Heart Rate Monitor
+  
+  Blynk.run();        // run Blynk magic
+  timer.run();        // run timer every second
+}
